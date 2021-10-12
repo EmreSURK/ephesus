@@ -13,6 +13,9 @@
 - SQL Querying 
 - Terminal GUI for setting up and running the project. 
 - Logging
+- Document Generating
+   - Swagger Page Generating
+   - Client Code Generating
 - README
 - Tutorials
 
