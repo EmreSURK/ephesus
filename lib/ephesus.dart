@@ -3,7 +3,15 @@ import 'dart:io';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelfIO;
 
-typedef EphesusRoute = Response Function(Request request);
+typedef EphesusRoute = Response Function(EphesusRequest request);
+
+class EphesusRequest extends Request {
+  EphesusRequest(String method, Uri requestedUri) : super(method, requestedUri);
+  var queryParameters = <String, String>{};
+  var urlParameters = <String, String>{};
+  var body = <String, String>{};
+  var innerDataBag = <String, String>{};
+}
 
 class EphesusServer {
   late HttpServer _server;
@@ -15,7 +23,7 @@ class EphesusServer {
   }
 
   void initServer(int port) async {
-    var handler = const Pipeline().addMiddleware(logRequests()).addHandler(_echoRequest);
+    var handler = const Pipeline().addMiddleware(logRequests()).addHandler(_handleRoute);
 
     _server = await shelfIO.serve(handler, 'localhost', port);
 
@@ -38,7 +46,7 @@ class EphesusServer {
   void startServer({
     int port = 8080,
   }) async {
-    var handler = const Pipeline().addMiddleware(logRequests()).addHandler(_echoRequest);
+    var handler = const Pipeline().addMiddleware(logRequests()).addHandler(_handleRoute);
 
     var server = await shelfIO.serve(handler, 'localhost', port);
 
@@ -48,9 +56,41 @@ class EphesusServer {
     print('Serving at http://${server.address.host}:${server.port}');
   }
 
-  Response _echoRequest(Request request) {
+  Response _handleRoute(Request rawRequest) {
+    var request = rawRequest as EphesusRequest;
+    var urlParameters = <String, String>{};
+
     for (var route in _routes.keys) {
-      if (route == request.url.path) {
+      final currentRequestPathParts = request.url.path.split('/');
+      final currentRoutePathParts = route.split('/');
+
+      // the request is not for that route.
+      if (currentRoutePathParts.length != currentRequestPathParts.length) {
+        continue;
+      }
+
+      var matchCount = 0;
+
+      for (var i = 0; i < currentRoutePathParts.length; i++) {
+        // that should be a parameter.
+        final currentRoutePart = currentRoutePathParts[i];
+        final currentRequestPart = currentRequestPathParts[i];
+
+        if (currentRoutePart.startsWith(':')) {
+          final parameterKey = currentRoutePart.replaceAll(':', '');
+          final parameterValue = currentRequestPart;
+          urlParameters[parameterKey] = parameterValue;
+          matchCount++;
+        } else if (currentRoutePart == currentRequestPart) {
+          matchCount++;
+        }
+      }
+      request.urlParameters = urlParameters;
+      request.body = rawRequest.body;
+      // request.queryParameters
+
+      if (matchCount == currentRequestPathParts.length) {
+        // that is correct route, congrats! :)
         final handler = _routes[route];
         return handler!(request);
       }

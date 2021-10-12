@@ -7,6 +7,7 @@ environment:
 
 dependencies:
   shelf: 1.2.0
+  shelf_router : 
 
 dev_dependencies:
   pedantic: ^1.10.0
