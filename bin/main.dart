@@ -10,6 +10,10 @@ void main(List<String> arguments) {
       .addRoute(
         routePath: 'user',
         routeHandler: userRoute,
+      )
+      .addRoute(
+        routePath: 'user/:userID',
+        routeHandler: userRoute,
       );
 }
 
