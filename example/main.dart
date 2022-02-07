@@ -1,34 +1,20 @@
 import 'package:ephesusframework/ephesus.dart';
-import 'package:shelf/shelf.dart';
-import 'package:shelf_router/shelf_router.dart';
 
 void main(List<String> arguments) {
-  EphesusServer(port: 8080)
-      .addRoute(
-        routePath: 'users',
-        routeHandler: usersRoute,
-      )
-      .addRoute(
-        routePath: 'user',
-        routeHandler: userRoute,
-      )
-      .addRoute(
-        routePath: 'users/:userID/fav/:commentID',
-        routeHandler: singleUserRoute,
-      );
+  EphesusServer(port: 8080).startServer();
 }
 
-Response usersRoute(Request request) {
-  final c = request.context;
-  return Response.ok('usersRoute ${request.context}');
-}
+@RestController()
+class IndexController {
+  @GetRoute()
+  String get() {
+    print('get route');
+    return '';
+  }
 
-Response userRoute(Request request) {
-  final c = request.context;
-  return Response.ok('userRoute ${request.context}');
-}
-
-Response singleUserRoute(Request request) {
-  final c = request.context;
-  return Response.ok('userRoute ${request.context}');
+  @PostRoute()
+  String create() {
+    print('post route');
+    return '';
+  }
 }
