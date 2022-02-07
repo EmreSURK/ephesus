@@ -1,20 +1,20 @@
 ### A backend framework for Dart.
 
 ```dart
-   @RestController()
-   class IndexController {
-      @GetRoute()
-      String get() {
-         print('get route');
-         return '';
-      }
-
-      @PostRoute()
-      String create() {
-         print('post route');
-         return '';
-      }
+@RestController()
+class IndexController {
+   @GetRoute()
+   String get() {
+      print('get route');
+      return '';
    }
+
+   @PostRoute()
+   String create() {
+      print('post route');
+      return '';
+   }
+}
 ```
 
 #### TODO 
