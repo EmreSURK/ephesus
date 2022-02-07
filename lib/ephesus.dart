@@ -1,7 +1,23 @@
 import 'dart:io';
+import 'dart:mirrors';
 
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelfIO;
+
+class RestController {
+  final String route;
+  const RestController({this.route = ''});
+}
+
+class GetRoute {
+  final String route;
+  const GetRoute({this.route = ''});
+}
+
+class PostRoute {
+  final String route;
+  const PostRoute({this.route = ''});
+}
 
 typedef EphesusRoute = Response Function(EphesusRequest request);
 
@@ -19,7 +35,68 @@ class EphesusServer {
   EphesusServer({
     required int port,
   }) {
+    parseAnnotedRotes();
     initServer(port);
+  }
+
+  void parseAnnotedRotes() {
+    // find all classes that uses RestController as aannotion
+    var mirrorSystem = currentMirrorSystem();
+    mirrorSystem.libraries.forEach((lk, l) {
+      l.declarations.forEach((dk, d) {
+        if (d is ClassMirror) {
+          var cm = d;
+          cm.metadata.forEach((md) {
+            var metadata = md;
+            // if (metadata.type == reflectClass(RestController) && metadata.getField(#id).reflectee == '/313') {
+            if (metadata.type == reflectClass(RestController)) {
+              print('found: ${cm.simpleName}');
+              cm.declarations.forEach((key, value) {
+                print(value);
+                value.metadata.forEach((methodAnnotion) {
+                  if (methodAnnotion.type == reflectClass(GetRoute)) {
+                    // get route.
+                    print('found a get route. $value ');
+                  }
+                  if (methodAnnotion.type == reflectClass(PostRoute)) {
+                    // get route.
+                    print('found a post route. $value ');
+                  }
+                });
+              });
+            }
+          });
+        }
+      });
+    });
+
+/*     var model = IndexController();
+
+    InstanceMirror mirror = reflect(model);
+
+    // this is Map<Symbol,DeclarationMirror> contains properties (VariableMirrors) ,constructors and methods (MethodMirror) of
+    // a Model mirror instance
+    var mirrorDeclarations = mirror.type.declarations;
+
+    mirror.invoke(Symbol('get'), []);
+
+    mirrorDeclarations.forEach((symbol, member) {
+      print(member is VariableMirror);
+
+      if (member is VariableMirror) {
+        print("A List of Instance Mirror of Annotation ${member.metadata}");
+        // result:A List of Instance Mirror of Annotation [InstanceMirror on Instance of 'Annotation']
+
+        //find a specific metadata
+        InstanceMirror annotation = member.metadata.firstWhere((mirror) => mirror.type.simpleName == #Annotation, orElse: null);
+        print("the Instance Mirror of Annotation ${annotation}");
+        //result: the Instance Mirror of Annotation InstanceMirror on Instance of 'Annotation'
+
+        //get reflectee, property value, using a Symbol
+        print("Annotation param value = ${annotation.getField(#param).reflectee}");
+      }
+      //result: Annotation param value = value example
+    }); */
   }
 
   void initServer(int port) async {
